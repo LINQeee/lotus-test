@@ -42,7 +42,7 @@ export const execute = (command, cwd, input = '', env = {}, timeout = config.set
 export const setup = async (command, log) => {
     const result = await execute(command, project).catch(error => {
         if (error.code === 'ENOENT') {
-            const option = command[0] === (process.env.CMAKE ?? 'cmake') ? 'CMAKE' : 'CC'
+            const option = command[0] === (process.env.CMAKE ?? config.cmake) ? 'CMAKE' : 'CC'
             throw new Error(`Cannot find ${command[0]}. Install it and add it to PATH, or set ${option} to its executable path.`)
         }
         throw error

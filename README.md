@@ -1,6 +1,6 @@
 # Lotus test
 
-Integration tests for the Lotus compiler. Requires Node.js 20+, CMake and the Lotus build toolchain. No npm dependencies.
+Integration tests for the Lotus compiler. Requires Node.js 20+, CMake and the Lotus build toolchain.
 
 ```sh
 npm install -g git+https://github.com/LINQeee/lotus-test.git
@@ -24,12 +24,14 @@ Run inside a Lotus checkout containing `lotus-test-config.json`, or any of its s
 Tests use JSON-valued comments such as `// expect: "hello\n"` or `// error: "diagnostic"`. Optional directives: `input`, `runtime`, `ir`, `log`, `no-log`, `entry-allocas`. The runtime and entry-allocas defaults come from the project config.
 
 Results are grouped by feature; failures include diagnostics and log paths. Exit codes: 0 for success, 1 for test failures, 2 for setup errors.
+Invalid test comments report `DIRECTIVE ERROR` with the file, line and source comment. That test is not executed; other tests continue.
 
 The runner currently uses the Lotus macOS runtime and sanitizer setup. Packaging it separately does not add Linux or Windows support. Memory tests compile against `lotus-core/lotus.h` and `lotus-core/library.c` from the tested project.
 
 ## Development
 
 ```sh
+npm ci
 npm link
 ```
 

@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import {parseArgs} from 'node:util'
+import {configSchema, validate} from './schema.mjs'
 
 export let project
 export const config = {}
@@ -26,29 +27,9 @@ export const loadConfig = () => {
     if (options.verbose !== undefined) config.verbose = options.verbose
     if (options['no-build']) config.build = false
 
-    const configOptions = {
-        paths: ['testsDir', 'resultsDir', 'compiler', 'runtimeBuild', 'runtimeLibrary'],
-        flags: ['build', 'verbose', 'entryAllocas'],
-        timeouts: ['timeout', 'setupTimeout'],
-        other: ['runtime', 'cmake']
-    }
-
-    for (const key of Object.keys(config))
-        if (!Object.values(configOptions).flat().includes(key))
-            throw new Error(`Unknown test config option: ${key}`)
-
-    for (const key of configOptions.paths) {
-        if (!config[key] || typeof config[key] !== 'string') throw new Error(`${key} must be a path`)
+    Object.assign(config, validate(configSchema, config))
+    for (const key of ['testsDir', 'resultsDir', 'compiler', 'runtimeBuild', 'runtimeLibrary'])
         config[key] = path.resolve(key === 'compiler' && options.compiler !== undefined ? process.cwd() : project, config[key])
-    }
-    for (const key of configOptions.flags)
-        if (typeof config[key] !== 'boolean') throw new Error(`${key} must be boolean`)
-
-    for (const key of configOptions.timeouts)
-        if (!Number.isFinite(config[key]) || config[key] <= 0) throw new Error(`${key} must be a positive number`)
-
-    if (typeof config.cmake !== 'string' || !config.cmake.trim()) throw new Error('cmake must be an executable name or path')
     if (config.cmake.includes('/') || config.cmake.includes('\\')) config.cmake = path.resolve(project, config.cmake)
-    if (!['normal', 'none', 'memory'].includes(config.runtime)) throw new Error('runtime must be "normal", "none" or "memory"')
     return {options, positionals}
 }

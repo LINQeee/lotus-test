@@ -68,8 +68,9 @@ const main = async () => {
             reporter.finish(name, performance.now() - tick, failure)
             if (failure) {
                 failed++
-                console.log(`    ${failure}\n    log: ${log}`)
-                console.log((result.err || result.out).trimEnd().split('\n').slice(-8).map(line => `    ${line}`).join('\n'))
+                console.log(failure.split('\n').map(line => `    ${line}`).join('\n') + `\n    log: ${log}`)
+                const output = (result.err || result.out).trimEnd()
+                if (output) console.log(output.split('\n').slice(-8).map(line => `    ${line}`).join('\n'))
             }
         }
         reporter.report((performance.now() - started) / 1000)
