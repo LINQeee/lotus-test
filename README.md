@@ -26,7 +26,7 @@ Tests use JSON-valued comments such as `// expect: "hello\n"` or `// error: "dia
 Results are grouped by feature; failures include diagnostics and log paths. Exit codes: 0 for success, 1 for test failures, 2 for setup errors.
 Invalid test comments report `DIRECTIVE ERROR` with the file, line and source comment. That test is not executed; other tests continue.
 
-The runner currently uses the Lotus macOS runtime and sanitizer setup. Packaging it separately does not add Linux or Windows support. Memory tests compile against `lotus-core/lotus.h` and `lotus-core/library.c` from the tested project.
+The runner currently uses the Lotus macOS runtime and sanitizer setup. Packaging it separately does not add Linux or Windows support. Memory tests build the project's `lotus_core` CMake target with allocation tracking and sanitizers. Source files and native registrations remain defined by lotus-core; the runner adds its test functions without listing runtime sources.
 
 ## Development
 
@@ -36,3 +36,4 @@ npm link
 ```
 
 The `lotus-test` command then runs this checkout. Implementation lives in `src/`; language test cases belong in the compiler repository.
+To run the checkout directly from the compiler root, use `node tools/lotus-test/bin/lotus-test.mjs`.

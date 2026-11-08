@@ -28,13 +28,15 @@ export const prepareRuntime = async (runtime, temp, logs, memory) => {
     }
     if (!memory.library) {
         const cc = process.env.CC ?? 'clang'
-        const output = path.join(temp, 'memory.dylib')
-        await setup([cc, '-std=c11', '-g', '-O1', '-fsanitize=address,undefined', '-dynamiclib',
-            '-I', path.join(project, 'lotus-core'),
-            fileURLToPath(new URL('./string-memory-runtime.c', import.meta.url)), '-o', output], path.join(logs, 'memory-build.log'))
+        const cmake = process.env.CMAKE ?? config.cmake
+        const build = path.join(temp, 'memory-build')
+        await setup([cmake, '-S', fileURLToPath(new URL('./memory', import.meta.url)), '-B', build,
+            `-DLOTUS_CORE_SOURCE=${path.join(project, 'lotus-core')}`, `-DCMAKE_C_COMPILER=${cc}`],
+            path.join(logs, 'memory-configure.log'))
+        await setup([cmake, '--build', build, '--target', 'lotus_core'], path.join(logs, 'memory-build.log'))
         const resource = await setup([cc, '-print-resource-dir'], path.join(logs, 'clang-resource.log'))
         memory.asan = path.join(resource, 'lib/darwin/libclang_rt.asan_osx_dynamic.dylib')
-        memory.library = output
+        memory.library = path.join(build, 'lib/libmemory.dylib')
     }
     fs.symlinkSync(memory.library, library)
     return {
