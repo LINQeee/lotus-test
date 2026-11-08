@@ -1,0 +1,17 @@
+{
+  "name": "@linqeee/lotus-test",
+  "version": "0.1.0",
+  "description": "Lotus compiler integration test runner",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LINQeee/lotus-test.git"
+  },
+  "bin": {
+    "lotus-test": "bin/lotus-test.mjs"
+  },
+  "files": ["bin", "src"],
+  "engines": {
+    "node": ">=20"
+  }
+}
