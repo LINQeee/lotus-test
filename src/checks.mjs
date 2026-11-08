@@ -46,7 +46,7 @@ export const checkResult = (data, {out, err, code, signal, timedOut}) => {
         if (code !== 0) return `Unexpected exit ${code}`
         const start = out.indexOf(startMarker)
         const end = out.indexOf(endMarker, start + startMarker.length)
-        if (start < 0 || end < 0) return 'Missing execution markers (compiler/JIT did not finish)'
+        if (start < 0 || end < 0) return 'Missing execution markers (program did not finish)'
         const actual = out.slice(start + startMarker.length, end)
         if (actual !== data.expect) return `Output differs\n    expected: ${JSON.stringify(data.expect)}\n    actual:   ${JSON.stringify(actual)}`
     }

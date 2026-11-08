@@ -44,10 +44,8 @@ const main = async () => {
     const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'lotus-tests-'))
     const started = performance.now()
     let failed = 0
-    const memory = {}
+    const runtimes = {}
     try {
-        fs.mkdirSync(path.join(temp, 'run'))
-        fs.mkdirSync(path.join(temp, 'libs'))
         for (const [index, file] of files.entries()) {
             const relative = path.relative(root, file)
             const name = relative.startsWith('../') ? file : relative
@@ -56,9 +54,8 @@ const main = async () => {
             let failure = null, result = {out: '', err: ''}
             try {
                 const data = readMetadata(file)
-                const env = await prepareRuntime(data.runtime, temp, logs, memory)
-                fs.copyFileSync(file, path.join(temp, 'test.lt'))
-                result = await execute([compiler], path.join(temp, 'run'), data.input ?? '', env, timeout)
+                const {libs, env} = runtimes[data.runtime] ??= await prepareRuntime(data.runtime, temp, logs)
+                result = await execute([compiler, 'run', '--debug', '--libs', libs, file], temp, data.input ?? '', env, timeout)
                 failure = checkResult(data, result)
             } catch (error) {
                 failure = error.message

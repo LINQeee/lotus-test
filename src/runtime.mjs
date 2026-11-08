@@ -16,32 +16,29 @@ export const buildCompiler = async (compiler, logs) => {
     }
 }
 
-export const prepareRuntime = async (runtime, temp, logs, memory) => {
-    const library = path.join(temp, 'libs/liblotus_core.dylib')
-    fs.rmSync(library, {force: true})
-    if (runtime === 'none') return {}
+export const prepareRuntime = async (runtime, temp, logs) => {
     if (runtime !== 'memory') {
-        const file = config.runtimeLibrary
-        if (!fs.existsSync(file)) throw new Error('Runtime library missing; run without --no-build')
-        fs.symlinkSync(file, library)
-        return {}
+        const libs = path.join(temp, runtime)
+        if (runtime === 'normal' && !fs.existsSync(config.runtimeLibrary))
+            throw new Error('Runtime library missing; run without --no-build')
+        fs.mkdirSync(libs, {recursive: true})
+        if (runtime === 'normal') fs.symlinkSync(config.runtimeLibrary, path.join(libs, path.basename(config.runtimeLibrary)))
+        return {libs}
     }
-    if (!memory.library) {
-        const cc = process.env.CC ?? 'clang'
-        const cmake = process.env.CMAKE ?? config.cmake
-        const build = path.join(temp, 'memory-build')
-        await setup([cmake, '-S', fileURLToPath(new URL('./memory', import.meta.url)), '-B', build,
-            `-DLOTUS_CORE_SOURCE=${path.join(project, 'lotus-core')}`, `-DCMAKE_C_COMPILER=${cc}`],
-            path.join(logs, 'memory-configure.log'))
-        await setup([cmake, '--build', build, '--target', 'lotus_core'], path.join(logs, 'memory-build.log'))
-        const resource = await setup([cc, '-print-resource-dir'], path.join(logs, 'clang-resource.log'))
-        memory.asan = path.join(resource, 'lib/darwin/libclang_rt.asan_osx_dynamic.dylib')
-        memory.library = path.join(build, 'lib/libmemory.dylib')
-    }
-    fs.symlinkSync(memory.library, library)
+    const cc = process.env.CC ?? 'clang'
+    const cmake = process.env.CMAKE ?? config.cmake
+    const build = path.join(temp, 'memory-build')
+    await setup([cmake, '-S', fileURLToPath(new URL('./memory', import.meta.url)), '-B', build,
+        `-DLOTUS_CORE_SOURCE=${path.join(project, 'lotus-core')}`, `-DCMAKE_C_COMPILER=${cc}`],
+        path.join(logs, 'memory-configure.log'))
+    await setup([cmake, '--build', build, '--target', 'lotus_core'], path.join(logs, 'memory-build.log'))
+    const resource = await setup([cc, '-print-resource-dir'], path.join(logs, 'clang-resource.log'))
     return {
-        DYLD_INSERT_LIBRARIES: memory.asan,
-        ASAN_OPTIONS: 'detect_leaks=0:abort_on_error=1',
-        UBSAN_OPTIONS: 'halt_on_error=1'
+        libs: path.join(build, 'lib'),
+        env: {
+            DYLD_INSERT_LIBRARIES: path.join(resource, 'lib/darwin/libclang_rt.asan_osx_dynamic.dylib'),
+            ASAN_OPTIONS: 'detect_leaks=0:abort_on_error=1',
+            UBSAN_OPTIONS: 'halt_on_error=1'
+        }
     }
 }
