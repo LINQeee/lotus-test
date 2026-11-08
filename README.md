@@ -1,5 +1,5 @@
 # Lotus test
 
-Integration test runner for the [Lotus compiler](https://github.com/LINQeee/lotus).
+Integration test runner for the Lotus compiler.
 
-[Install and run](https://github.com/LINQeee/lotus/blob/main/docs/development/tests.mdx) · [Write tests](https://github.com/LINQeee/lotus/blob/main/docs/development/tests.mdx#write-a-test) · [Contribute](https://github.com/LINQeee/lotus/blob/main/docs/development/workflow.mdx)
+[Install and run](https://lotus-8e1f9387.mintlify.site/development/tests) · [Write tests](https://lotus-8e1f9387.mintlify.site/development/tests#write-a-test) · [Contribute](https://lotus-8e1f9387.mintlify.site/development/workflow)
