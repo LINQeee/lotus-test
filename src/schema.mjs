@@ -12,10 +12,11 @@ export const configSchema = z.strictObject({
 })
 
 export const metadataSchema = z.strictObject({
-    expect: z.string().optional(), error: z.string().optional(), input: z.string().optional(),
+    'runtime-error': z.string().optional(), expect: z.string().optional(), error: z.string().optional(), input: z.string().optional(),
     runtime: runtime.optional(), 'entry-allocas': z.boolean().optional(),
     ir: z.array(z.string()).optional(), log: z.array(z.string()).optional(), 'no-log': z.array(z.string()).optional(),
-}).refine(data => Object.hasOwn(data, 'expect') !== Object.hasOwn(data, 'error'), 'Specify exactly one of expect or error')
+}).refine(data => ['expect', 'error', 'runtime-error'].filter(key => Object.hasOwn(data, key)).length === 1,
+    'Specify exactly one of expect, error or runtime-error')
 
 export const validate = (schema, data) => {
     const result = schema.safeParse(data)

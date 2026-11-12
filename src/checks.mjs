@@ -27,7 +27,7 @@ export const readMetadata = file => {
     if (!result.success)
         throw invalid(result.error.issues.map(issue => {
             const key = issue.path[0] ?? issue.keys?.[0]
-            const line = locations.get(key) ?? locations.get('expect') ?? locations.get('error') ?? 0
+            const line = locations.get(key) ?? locations.get('expect') ?? locations.get('error') ?? locations.get('runtime-error') ?? 0
             const field = issue.path.length ? `Directive "${issue.path.join('.')}" — ` : ''
             return diagnostic(line, field + issue.message)
         }).join('\n'))
@@ -38,7 +38,11 @@ export const checkResult = (data, {out, err, code, signal, timedOut}) => {
     if (timedOut) return 'Timed out'
     if (signal) return `Process killed by ${signal}`
     const log = out + err
-    if (Object.hasOwn(data, 'error')) {
+    if (Object.hasOwn(data, 'runtime-error')) {
+        if (code !== 1) return `Expected runtime error (exit 1), got ${code}`
+        if (!out.includes(startMarker)) return 'Expected runtime error, but execution did not start'
+        if (!err.includes(data['runtime-error'])) return `Missing diagnostic: ${data['runtime-error']}`
+    } else if (Object.hasOwn(data, 'error')) {
         if (code !== 1) return `Expected compiler error (exit 1), got ${code}`
         if (out.includes(startMarker)) return 'Expected rejection before execution, but program ran'
         if (!log.includes(data.error)) return `Missing diagnostic: ${data.error}`
